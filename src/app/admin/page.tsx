@@ -26,7 +26,7 @@ export default function AdminDashboard() {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const data = await res.json();
-            if (data.success) setStats(data.data.stats);
+            if (!data.error && data.stats) setStats(data.stats);
         } catch (err) {
             console.error("Failed to fetch stats", err);
         }
@@ -38,8 +38,8 @@ export default function AdminDashboard() {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const data = await res.json();
-            if (data.success) {
-                setUsersList(data.data.users);
+            if (!data.error && data.users) {
+                setUsersList(data.users);
             }
         } catch (err) {
             console.error("Failed to fetch users", err);
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
                 body: JSON.stringify({ role: newRole })
             });
             const data = await res.json();
-            if (data.success) {
+            if (!data.error) {
                 setUsersList(usersList.map(u => u._id === userId ? { ...u, role: newRole } : u));
             } else {
                 alert(data.error || "Failed to update role");

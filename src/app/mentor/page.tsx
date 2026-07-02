@@ -26,8 +26,8 @@ export default function MentorDashboard() {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const data = await res.json();
-            if (data.success) {
-                setInterviews(data.data.interviews);
+            if (!data.error && data.interviews) {
+                setInterviews(data.interviews);
             }
         } catch (err) {
             console.error("Failed to fetch interviews", err);
@@ -49,7 +49,7 @@ export default function MentorDashboard() {
                 body: JSON.stringify({ feedback: feedbackText })
             });
             const data = await res.json();
-            if (data.success) {
+            if (!data.error) {
                 // Update local state
                 setInterviews(interviews.map(inv => 
                     inv._id === selectedInterview._id 
