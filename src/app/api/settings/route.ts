@@ -81,11 +81,13 @@ export async function PUT(req: NextRequest) {
             await user.save();
 
             // Add to password history
-            user.passwordHistory.push(user.password);
-            if (user.passwordHistory.length > 5) {
-                user.passwordHistory = user.passwordHistory.slice(-5);
+            if (user.password) {
+                user.passwordHistory.push(user.password);
+                if (user.passwordHistory.length > 5) {
+                    user.passwordHistory = user.passwordHistory.slice(-5);
+                }
+                await user.save();
             }
-            await user.save();
 
             await SecurityLog.create({
                 userId: user._id,

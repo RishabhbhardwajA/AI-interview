@@ -9,6 +9,7 @@ export type SecurityEventType =
     | "account_locked"
     | "password_changed"
     | "password_change_failed"
+    | "profile_updated"
     | "session_revoked";
 
 export interface ISecurityLog extends Document {
@@ -39,6 +40,7 @@ const SecurityLogSchema: Schema<ISecurityLog> = new Schema(
                 "account_locked",
                 "password_changed",
                 "password_change_failed",
+                "profile_updated",
                 "session_revoked"
             ],
         },
