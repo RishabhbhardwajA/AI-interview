@@ -25,28 +25,57 @@ export default function ResumePage() {
         if (!authLoading && !isAuthenticated) router.push("/login");
     }, [authLoading, isAuthenticated, router]);
 
+    const extractTextFromPDF = async (file: File): Promise<string> => {
+        const pdfjsLib = await import("pdfjs-dist");
+        // Set worker dynamically to avoid SSR issues
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const typedarray = new Uint8Array(e.target?.result as ArrayBuffer);
+                    const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+                    let text = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        const pageText = content.items.map((item: any) => item.str).join(" ");
+                        text += pageText + "\n";
+                    }
+                    resolve(text);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
+    };
+
     const analyzeResume = async () => {
         if (!file && (!resumeText.trim() || resumeText.trim().length < 50)) return;
         setLoading(true);
         try {
-            const formData = new FormData();
+            let textToSend = resumeText;
             if (file) {
-                formData.append("file", file);
-            } else {
-                formData.append("resumeText", resumeText);
+                textToSend = await extractTextFromPDF(file);
+                if (!textToSend || textToSend.trim().length < 50) {
+                    throw new Error("Could not extract enough text from the PDF. It may be an image-only PDF.");
+                }
             }
 
             const res = await fetch("/api/resume", {
                 method: "POST",
-                headers: { Authorization: `Bearer ${token}` }, // don't set Content-Type manually for FormData
-                body: formData,
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ resumeText: textToSend }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             setAnalysis(data.analysis);
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Failed to analyze resume. Please check your Groq API key.");
+            alert(err.message || "Failed to analyze resume. Please check your Groq API key.");
         } finally {
             setLoading(false);
         }

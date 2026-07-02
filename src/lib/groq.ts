@@ -4,7 +4,7 @@ const groqClient = new Groq({
     apiKey: process.env.GROQ_API_KEY || "",
 });
 
-export const GROQ_MODEL = "llama-3.1-70b-versatile";
+export const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 export interface AnswerEvaluation {
     score: number;

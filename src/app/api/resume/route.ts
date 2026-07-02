@@ -2,8 +2,6 @@ import { NextRequest } from "next/server";
 import connectDB from "@/lib/mongodb";
 import { getUserFromRequest, errorResponse, successResponse } from "@/middleware/auth";
 import { analyzeResume } from "@/lib/groq";
-import pdfParse from "pdf-parse";
-
 // POST /api/resume — Analyze resume
 export async function POST(req: NextRequest) {
     try {
@@ -14,33 +12,13 @@ export async function POST(req: NextRequest) {
             return errorResponse("Unauthorized", 401);
         }
 
-        const contentType = req.headers.get("content-type") || "";
-        let resumeText = "";
+        const body = await req.json();
+        const resumeText = body.resumeText;
 
-        if (contentType.includes("multipart/form-data")) {
-            const formData = await req.formData();
-            const file = formData.get("file") as File | null;
-            const textData = formData.get("resumeText") as string | null;
-
-            if (file) {
-                if (file.type !== "application/pdf") {
-                    return errorResponse("Only PDF files are supported", 400);
-                }
-                const arrayBuffer = await file.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                const pdfData = await pdfParse(buffer);
-                resumeText = pdfData.text;
-            } else if (textData) {
-                resumeText = textData;
-            }
-        } else {
-            const body = await req.json();
-            resumeText = body.resumeText;
-        }
-
-        if (!resumeText || resumeText.trim().length < 50) {
+        const cleanText = resumeText.replace(/\s+/g, '');
+        if (!cleanText || cleanText.length < 50) {
             return errorResponse(
-                "Please provide your resume text (minimum 50 characters)",
+                "The PDF appears to be empty, an image, or contains too little text (minimum 50 characters required).",
                 400
             );
         }
