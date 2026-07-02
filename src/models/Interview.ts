@@ -22,6 +22,8 @@ export interface IInterview extends Document {
     totalQuestions: number;
     company?: string;
     interviewMode: "general" | "recruiter";
+    mentorFeedback?: string;
+    reviewedBy?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -69,6 +71,11 @@ const InterviewSchema: Schema<IInterview> = new Schema(
             type: String,
             enum: ["general", "recruiter"],
             default: "general",
+        },
+        mentorFeedback: { type: String, default: "" },
+        reviewedBy: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
         },
     },
     {

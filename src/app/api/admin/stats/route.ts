@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
+import Interview from "@/models/Interview";
 import { requireRole, successResponse, errorResponse } from "@/middleware/auth";
 
 export async function GET(req: NextRequest) {
@@ -13,11 +14,20 @@ export async function GET(req: NextRequest) {
             return authResult.error as Response;
         }
 
-        const users = await User.find({}, { name: 1, email: 1, role: 1, createdAt: 1, _id: 1 }).sort({ createdAt: -1 });
+        const totalUsers = await User.countDocuments();
+        const activeInterviews = await Interview.countDocuments({ status: "in-progress" });
+        const completedInterviews = await Interview.countDocuments({ status: "completed" });
         
-        return successResponse({ users, count: users.length });
+        return successResponse({ 
+            stats: {
+                users: totalUsers,
+                activeInterviews: activeInterviews,
+                completedInterviews: completedInterviews,
+                systemStatus: "Online"
+            }
+        });
     } catch (error) {
-        console.error("[Admin Users API Error]:", error);
+        console.error("[Admin Stats API Error]:", error);
         return errorResponse("Internal server error", 500);
     }
 }

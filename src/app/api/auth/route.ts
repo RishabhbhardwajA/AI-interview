@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
         // We will save first, then push the hashed password to history
         await user.save();
         if (user.password) {
-            user.passwordHistory.push(user.password);
+            user.passwordHistory.push(String(user.password));
             await user.save();
         }
 
