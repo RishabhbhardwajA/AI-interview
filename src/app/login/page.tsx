@@ -5,10 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
-import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
-    const { login, googleLogin, isAuthenticated } = useAuth();
+    const { login, isAuthenticated } = useAuth();
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -102,37 +101,6 @@ export default function LoginPage() {
                         )}
                     </button>
                 </form>
-
-                <div className="my-8 flex items-center gap-4">
-                    <div className="h-px bg-gray-200 flex-1"></div>
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Or continue with</span>
-                    <div className="h-px bg-gray-200 flex-1"></div>
-                </div>
-
-                <div className="flex justify-center w-full [&>div]:w-full [&>div>div]:!w-full [&_iframe]:!w-full">
-                    <GoogleLogin
-                        onSuccess={async (credentialResponse) => {
-                            if (credentialResponse.credential) {
-                                try {
-                                    setLoading(true);
-                                    await googleLogin(credentialResponse.credential);
-                                    router.push("/dashboard");
-                                } catch (err: any) {
-                                    setError(err.message || "Google login failed");
-                                    setLoading(false);
-                                }
-                            }
-                        }}
-                        onError={() => {
-                            setError("Google login failed");
-                        }}
-                        useOneTap
-                        theme="outline"
-                        size="large"
-                        text="continue_with"
-                        shape="pill"
-                    />
-                </div>
 
                 <p className="text-center mt-8 text-sm font-medium text-[#464555]">
                     Don't have an account?{" "}

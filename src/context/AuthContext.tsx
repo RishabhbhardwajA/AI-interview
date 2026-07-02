@@ -14,7 +14,6 @@ interface AuthContextType {
     token: string | null;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
-    googleLogin: (credential: string) => Promise<void>;
     register: (name: string, email: string, password: string) => Promise<void>;
     logout: () => void;
     isAuthenticated: boolean;
@@ -85,24 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         []
     );
 
-    const googleLogin = useCallback(async (credential: string) => {
-        const res = await fetch("/api/auth", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ credential, action: "google-login" }),
-        });
 
-        const data = await res.json();
-
-        if (!res.ok) {
-            throw new Error(data.error || "Google login failed");
-        }
-
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-    }, []);
 
     const logout = useCallback(() => {
         setToken(null);
@@ -118,7 +100,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 token,
                 loading,
                 login,
-                googleLogin,
                 register,
                 logout,
                 isAuthenticated: !!token && !!user,

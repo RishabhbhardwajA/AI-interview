@@ -5,9 +5,6 @@ import Session from "@/models/Session";
 import SecurityLog from "@/models/SecurityLog";
 import { generateToken, errorResponse, successResponse } from "@/middleware/auth";
 import crypto from "crypto";
-import { OAuth2Client } from "google-auth-library";
-
-const googleClient = new OAuth2Client(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
 // Helper for password strength validation
 function validatePasswordStrength(password: string): { isValid: boolean; error?: string } {
@@ -146,107 +143,6 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // ================== GOOGLE LOGIN LOGIC ==================
-        if (action === "google-login") {
-            const { credential } = await req.json();
-            if (!credential) return errorResponse("Google token is required", 400);
-
-            try {
-                const ticket = await googleClient.verifyIdToken({
-                    idToken: credential,
-                    audience: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-                });
-                const payload = ticket.getPayload();
-                if (!payload || !payload.email) return errorResponse("Invalid Google token", 400);
-
-                const { email: googleEmail, name: googleName, sub: googleId, picture: googlePicture } = payload;
-
-                // Check if user exists
-                let user = await User.findOne({ email: googleEmail });
-                let isNewUser = false;
-
-                if (!user) {
-                    // Create new user for Google login
-                    user = new User({
-                        name: googleName,
-                        email: googleEmail,
-                        isEmailVerified: true, // Google emails are already verified
-                        provider: "google",
-                        providerId: googleId,
-                        avatar: googlePicture,
-                    });
-                    await user.save();
-                    isNewUser = true;
-                    
-                    await SecurityLog.create({
-                        userId: user._id,
-                        event: "login_success",
-                        ipAddress,
-                        deviceInfo,
-                        details: "Account registered via Google",
-                    });
-                } else {
-                    // User exists. Ensure they are linked if not already (or just update avatar/providerId)
-                    if (!user.providerId) {
-                        user.provider = "google";
-                        user.providerId = googleId;
-                        user.isEmailVerified = true;
-                        if (googlePicture && !user.avatar) user.avatar = googlePicture;
-                        await user.save();
-                    }
-                }
-
-                // Generate Token
-                const token = generateToken({
-                    userId: user._id.toString(),
-                    email: user.email,
-                    role: user.role,
-                });
-
-                // Create Session
-                const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-                const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-                
-                await Session.create({
-                    userId: user._id,
-                    tokenHash,
-                    ipAddress,
-                    deviceInfo,
-                    expiresAt,
-                });
-
-                if (!isNewUser) {
-                    await SecurityLog.create({
-                        userId: user._id,
-                        event: "login_success",
-                        ipAddress,
-                        deviceInfo,
-                        details: "Logged in via Google",
-                    });
-                }
-
-                return successResponse(
-                    {
-                        message: "Login successful",
-                        token,
-                        user: {
-                            id: user._id,
-                            name: user.name,
-                            email: user.email,
-                            role: user.role,
-                            isEmailVerified: user.isEmailVerified,
-                            avatar: user.avatar,
-                        },
-                    },
-                    isNewUser ? 201 : 200
-                );
-
-            } catch (error) {
-                console.error("[Google Auth Error]", error);
-                return errorResponse("Google authentication failed", 401);
-            }
-        }
-
         // ================== REGISTER LOGIC ==================
         if (!name || !email || !password) {
             return errorResponse("Name, email, and password are required", 400);
@@ -281,8 +177,10 @@ export async function POST(req: NextRequest) {
         // The password history needs the hashed password.
         // We will save first, then push the hashed password to history
         await user.save();
-        user.passwordHistory.push(user.password);
-        await user.save();
+        if (user.password) {
+            user.passwordHistory.push(user.password);
+            await user.save();
+        }
 
         // Simulate sending verification email
         console.log(`[EMAIL MOCK] Verification email sent to ${email}. Link: http://localhost:3000/verify-email?token=${verificationToken}&email=${email}`);

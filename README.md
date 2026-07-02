@@ -6,7 +6,7 @@ An intelligent, adaptive platform for technical interview preparation. Built to 
 
 - **🧠 Adaptive AI Interviews**: Simulates real-world technical interviews that adapt to your skill level using the Groq AI engine.
 - **🏆 Gamified Challenge Arena**: Complete coding and theoretical challenges, climb the leaderboard, and earn badges.
-- **🔐 Secure Authentication**: Custom JWT-based authentication system with password strength validation, session management, and **Google Sign-In** integration.
+- **🔐 Secure Authentication**: Custom JWT-based authentication system with password strength validation and session management.
 - **🎨 Glassmorphism UI**: A stunning, modern, and highly responsive user interface featuring glassmorphism and smooth animations.
 - **📊 Readiness & Analytics**: Track your progress over time with detailed charts, resume analysis, and skill gap identification.
 - **🛡️ Role-based Access Control**: Separate dashboards for Students, Mentors, and Administrators.
@@ -16,7 +16,7 @@ An intelligent, adaptive platform for technical interview preparation. Built to 
 - **Frontend**: Next.js 15, React 19, Tailwind CSS, Framer Motion (Animations), Recharts
 - **Backend**: Next.js App Router API Routes
 - **Database**: MongoDB (Mongoose)
-- **Authentication**: JWT, bcryptjs, Google Auth Library (`@react-oauth/google`)
+- **Authentication**: JWT, bcryptjs
 - **AI Integration**: Groq SDK
 
 ## 🚀 Getting Started
@@ -43,11 +43,8 @@ MONGODB_URI=mongodb://localhost:27017/ai-interview-platform
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 GROQ_API_KEY=your-groq-api-key-here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Google OAuth (For Google Sign-in)
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id-here
 ```
-> **Note**: To get a `GROQ_API_KEY`, visit the [Groq Cloud Console](https://console.groq.com/). For the `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, create a project in the [Google Cloud Console](https://console.cloud.google.com/).
+> **Note**: To get a `GROQ_API_KEY`, visit the [Groq Cloud Console](https://console.groq.com/).
 
 ### 4. Run the development server
 ```bash

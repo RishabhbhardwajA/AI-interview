@@ -71,11 +71,13 @@ export async function POST(req: NextRequest) {
         await user.save(); // This hashes the password via the hook
 
         // Push new hashed password to history
-        user.passwordHistory.push(user.password);
-        if (user.passwordHistory.length > 5) {
-            user.passwordHistory.shift(); // Keep only last 5 hashes
+        if (user.password) {
+            user.passwordHistory.push(user.password);
+            if (user.passwordHistory.length > 5) {
+                user.passwordHistory.shift(); // Keep only last 5 hashes
+            }
+            await user.save();
         }
-        await user.save();
 
         // Security: Revoke all active sessions
         await Session.deleteMany({ userId: user._id });

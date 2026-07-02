@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -24,14 +23,12 @@ export default function RootLayout({
     return (
         <html lang="en" className={inter.className}>
             <body>
-                <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
-                    <AuthProvider>
-                        <Navbar />
-                        <main style={{ paddingTop: "72px", minHeight: "100vh" }}>
-                            {children}
-                        </main>
-                    </AuthProvider>
-                </GoogleOAuthProvider>
+                <AuthProvider>
+                    <Navbar />
+                    <main style={{ paddingTop: "72px", minHeight: "100vh" }}>
+                        {children}
+                    </main>
+                </AuthProvider>
             </body>
         </html>
     );
