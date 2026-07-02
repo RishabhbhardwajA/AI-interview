@@ -10,6 +10,7 @@ export default function ResumePage() {
     const { user, token, isAuthenticated, loading: authLoading } = useAuth();
     const router = useRouter();
     const [resumeText, setResumeText] = useState("");
+    const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [analysis, setAnalysis] = useState<{
         overallScore: number;
@@ -25,13 +26,20 @@ export default function ResumePage() {
     }, [authLoading, isAuthenticated, router]);
 
     const analyzeResume = async () => {
-        if (!resumeText.trim() || resumeText.trim().length < 50) return;
+        if (!file && (!resumeText.trim() || resumeText.trim().length < 50)) return;
         setLoading(true);
         try {
+            const formData = new FormData();
+            if (file) {
+                formData.append("file", file);
+            } else {
+                formData.append("resumeText", resumeText);
+            }
+
             const res = await fetch("/api/resume", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ resumeText }),
+                headers: { Authorization: `Bearer ${token}` }, // don't set Content-Type manually for FormData
+                body: formData,
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
@@ -102,19 +110,59 @@ export default function ResumePage() {
                     </header>
 
                     <div className="glass-card rounded-[24px] p-6 lg:p-8 mb-8 neomorphic-hover cursor-default">
+                        {/* File Upload Area */}
+                        <div className="mb-6 relative">
+                            <input 
+                                type="file" 
+                                accept="application/pdf"
+                                onChange={(e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                        setFile(e.target.files[0]);
+                                        setResumeText(""); // clear text if file selected
+                                    }
+                                }}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className={`w-full border-2 border-dashed rounded-xl p-8 text-center transition-colors ${file ? 'border-[#3525cd] bg-[#3525cd]/5' : 'border-gray-300 hover:border-[#3525cd] bg-white'}`}>
+                                <FiFileText size={40} className={`mx-auto mb-3 ${file ? 'text-[#3525cd]' : 'text-gray-400'}`} />
+                                <p className="text-base font-medium text-[#111c2d]">
+                                    {file ? file.name : "Drag & drop your PDF resume here, or click to browse"}
+                                </p>
+                                {!file && <p className="text-xs text-gray-400 mt-1">Supports .pdf files</p>}
+                            </div>
+                            {file && (
+                                <button 
+                                    onClick={(e) => { e.preventDefault(); setFile(null); }}
+                                    className="absolute top-4 right-4 z-20 text-sm font-bold text-red-500 hover:text-red-700 bg-white px-2 py-1 rounded"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="my-6 flex items-center gap-4">
+                            <div className="h-px bg-gray-200 flex-1"></div>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">OR PASTE TEXT</span>
+                            <div className="h-px bg-gray-200 flex-1"></div>
+                        </div>
+
                         <textarea
-                            className="w-full bg-white border border-gray-200 rounded-xl p-6 text-base text-[#111c2d] focus:outline-none focus:ring-2 focus:ring-[#3525cd]/30 resize-y mb-4 placeholder-gray-400"
-                            placeholder="Paste your resume text here... (minimum 50 characters)"
+                            className="w-full bg-white border border-gray-200 rounded-xl p-6 text-base text-[#111c2d] focus:outline-none focus:ring-2 focus:ring-[#3525cd]/30 resize-y mb-4 placeholder-gray-400 disabled:opacity-50 disabled:bg-gray-50"
+                            placeholder={file ? "PDF is selected. Clear it to paste text instead." : "Paste your resume text here... (minimum 50 characters)"}
                             value={resumeText}
-                            onChange={(e) => setResumeText(e.target.value)}
-                            style={{ minHeight: "220px" }}
+                            onChange={(e) => {
+                                setResumeText(e.target.value);
+                                setFile(null); // clear file if typing
+                            }}
+                            disabled={!!file}
+                            style={{ minHeight: "150px" }}
                         />
                         <div className="flex justify-between items-center">
-                            <span className="text-xs font-semibold text-gray-400">{resumeText.length} characters</span>
+                            <span className="text-xs font-semibold text-gray-400">{file ? "PDF Ready" : `${resumeText.length} characters`}</span>
                             <button
                                 className="px-8 py-4 rounded-xl font-bold bg-[#3525cd] text-white hover:bg-[#281a9c] transition-colors shadow-lg shadow-[#3525cd]/20 flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
                                 onClick={analyzeResume}
-                                disabled={loading || resumeText.trim().length < 50}
+                                disabled={loading || (!file && resumeText.trim().length < 50)}
                             >
                                 {loading ? <div className="spinner border-t-white" style={{ width: "20px", height: "20px" }} /> : <><FiUpload size={20} /> Analyze Resume</>}
                             </button>
