@@ -1,0 +1,261 @@
+export interface CompanyRound {
+    name: string;
+    type: "technical" | "behavioral" | "system-design" | "coding" | "aptitude" | "hr";
+    description: string;
+}
+
+export interface CompanyProfile {
+    id: string;
+    name: string;
+    logo: string;
+    color: string;
+    description: string;
+    interviewStyle: string;
+    focusAreas: string[];
+    questionPatterns: string[];
+    difficultyRange: { min: number; max: number };
+    evaluationCriteria: string[];
+    rounds: CompanyRound[];
+    passingThreshold: number;
+    tips: string[];
+}
+
+export const COMPANY_PROFILES: Record<string, CompanyProfile> = {
+    google: {
+        id: "google",
+        name: "Google",
+        logo: "🔍",
+        color: "#4285F4",
+        description: "Known for rigorous algorithmic interviews focusing on scalability and system design.",
+        interviewStyle: "Google interviews emphasize algorithmic thinking, data structures, system design at scale, and Googleyness (culture fit). Interviewers look for clean, optimal solutions with thorough edge-case handling. Questions often involve large-scale distributed systems.",
+        focusAreas: [
+            "Data Structures & Algorithms",
+            "System Design at Scale",
+            "Problem Solving & Optimization",
+            "Code Quality & Edge Cases",
+            "Scalability & Distributed Systems",
+            "Googleyness & Leadership",
+        ],
+        questionPatterns: [
+            "Design a system that handles millions of concurrent users",
+            "Optimize an algorithm for large-scale data processing",
+            "Behavioral questions about teamwork and leadership",
+            "Live coding with optimal time/space complexity",
+            "Trade-off discussions between different approaches",
+        ],
+        difficultyRange: { min: 3, max: 5 },
+        evaluationCriteria: [
+            "Algorithmic efficiency (time & space complexity)",
+            "Code cleanliness and readability",
+            "Edge case identification and handling",
+            "System design scalability thinking",
+            "Communication and thought process clarity",
+            "Googleyness — collaboration, humility, learning mindset",
+        ],
+        rounds: [
+            { name: "Phone Screen", type: "coding", description: "45-min coding problem on data structures/algorithms" },
+            { name: "Technical Round 1", type: "coding", description: "Medium-hard coding with optimization focus" },
+            { name: "Technical Round 2", type: "coding", description: "Hard problem requiring creative algorithmic thinking" },
+            { name: "System Design", type: "system-design", description: "Design a large-scale distributed system" },
+            { name: "Behavioral", type: "behavioral", description: "Googleyness and leadership assessment" },
+        ],
+        passingThreshold: 7,
+        tips: [
+            "Think out loud — Google values your thought process",
+            "Always discuss time and space complexity",
+            "Consider edge cases before coding",
+            "Ask clarifying questions first",
+        ],
+    },
+    amazon: {
+        id: "amazon",
+        name: "Amazon",
+        logo: "📦",
+        color: "#FF9900",
+        description: "Leadership Principles-driven interviews with focus on practical problem-solving and customer obsession.",
+        interviewStyle: "Amazon's interview process revolves around their 16 Leadership Principles (especially Customer Obsession, Ownership, Bias for Action, Dive Deep). Expect STAR-format behavioral questions combined with technical problem-solving. Interviewers assess how you apply principles to real situations.",
+        focusAreas: [
+            "Leadership Principles (LP) — especially Customer Obsession, Ownership",
+            "Practical Problem Solving",
+            "System Design with Cost Optimization",
+            "Data Structures & Algorithms",
+            "Operational Excellence & Scalability",
+            "STAR Method Behavioral Questions",
+        ],
+        questionPatterns: [
+            "Tell me about a time you disagreed with your team (Have Backbone)",
+            "Design an e-commerce system with high availability",
+            "How would you optimize costs for a cloud-based service?",
+            "Coding problems focused on practical, real-world scenarios",
+            "How do you handle ambiguity and make data-driven decisions?",
+        ],
+        difficultyRange: { min: 2, max: 5 },
+        evaluationCriteria: [
+            "Leadership Principles alignment in responses",
+            "STAR format storytelling quality",
+            "Customer-centric thinking",
+            "Practical and cost-effective solutions",
+            "Ownership mindset and bias for action",
+            "Technical depth when diving deep",
+        ],
+        rounds: [
+            { name: "Online Assessment", type: "coding", description: "2 coding problems + work simulation" },
+            { name: "Phone Screen", type: "technical", description: "1 coding problem + 1 LP behavioral question" },
+            { name: "Loop Round 1", type: "technical", description: "Coding + LP questions" },
+            { name: "Loop Round 2", type: "system-design", description: "System design + LP questions" },
+            { name: "Bar Raiser", type: "behavioral", description: "Deep LP assessment by senior Amazonian" },
+        ],
+        passingThreshold: 6,
+        tips: [
+            "Prepare 8-10 STAR stories covering different Leadership Principles",
+            "Always tie answers back to customer impact",
+            "Show ownership — don't blame others",
+            "Be specific with metrics and data in your stories",
+        ],
+    },
+    microsoft: {
+        id: "microsoft",
+        name: "Microsoft",
+        logo: "🪟",
+        color: "#00A4EF",
+        description: "Collaborative interviews with focus on technical depth, growth mindset, and inclusive problem-solving.",
+        interviewStyle: "Microsoft interviews value collaborative problem-solving, growth mindset, and technical depth. Interviewers often work WITH you to solve problems, assessing how you think, learn, and adapt. Expect a mix of coding, system design, and behavioral questions with emphasis on inclusivity and diversity of thought.",
+        focusAreas: [
+            "Collaborative Problem Solving",
+            "Growth Mindset & Learning Ability",
+            "Technical Depth in Chosen Area",
+            "System Design & Architecture",
+            "Data Structures & Algorithms",
+            "Inclusive Design Thinking",
+        ],
+        questionPatterns: [
+            "Design a feature for a product used by millions",
+            "How would you improve an existing Microsoft product?",
+            "Coding problems with follow-up optimizations",
+            "Tell me about a time you learned from failure",
+            "How do you approach building accessible software?",
+        ],
+        difficultyRange: { min: 2, max: 4 },
+        evaluationCriteria: [
+            "Problem-solving approach and adaptability",
+            "Growth mindset — willingness to learn and iterate",
+            "Technical depth and breadth",
+            "Collaboration and communication skills",
+            "Design thinking and user empathy",
+            "Code quality and engineering practices",
+        ],
+        rounds: [
+            { name: "Phone Screen", type: "coding", description: "45-min coding problem with discussion" },
+            { name: "Technical Round 1", type: "coding", description: "Coding + problem-solving discussion" },
+            { name: "Technical Round 2", type: "system-design", description: "System design for real-world scenario" },
+            { name: "Behavioral", type: "behavioral", description: "Growth mindset and collaboration assessment" },
+            { name: "As-Appropriate (AA)", type: "hr", description: "Final decision round with hiring manager" },
+        ],
+        passingThreshold: 6,
+        tips: [
+            "Show your growth mindset — embrace learning from mistakes",
+            "Think about accessibility and inclusive design",
+            "Collaborate with the interviewer, don't just solve alone",
+            "Demonstrate passion for technology and impact",
+        ],
+    },
+    tcs: {
+        id: "tcs",
+        name: "TCS",
+        logo: "🏢",
+        color: "#2B2D42",
+        description: "Structured interviews focusing on CS fundamentals, aptitude, and process-oriented thinking.",
+        interviewStyle: "TCS interviews focus on core computer science fundamentals, logical reasoning, aptitude, and structured communication. They assess your understanding of basics rather than complex algorithms. Expect questions on OOPs, DBMS, OS, networking, and basic coding. Process-oriented and professional communication is highly valued.",
+        focusAreas: [
+            "Core CS Fundamentals (OOPs, DBMS, OS, Networking)",
+            "Basic Data Structures & Algorithms",
+            "Aptitude & Logical Reasoning",
+            "SQL & Database Concepts",
+            "Software Engineering Principles",
+            "Professional Communication",
+        ],
+        questionPatterns: [
+            "Explain OOP concepts with real-world examples",
+            "Write SQL queries for given scenarios",
+            "Basic coding problems (arrays, strings, sorting)",
+            "Difference between process and thread",
+            "What is normalization? Explain with examples",
+        ],
+        difficultyRange: { min: 1, max: 3 },
+        evaluationCriteria: [
+            "Strong fundamentals in core CS subjects",
+            "Clear and structured communication",
+            "Logical reasoning and aptitude",
+            "Basic coding ability",
+            "Professional attitude and willingness to learn",
+            "Understanding of software development lifecycle",
+        ],
+        rounds: [
+            { name: "Online Test", type: "aptitude", description: "Aptitude, reasoning, and basic coding MCQs" },
+            { name: "Technical Round", type: "technical", description: "CS fundamentals, basic coding, and project discussion" },
+            { name: "Managerial Round", type: "behavioral", description: "Situational questions and career goals" },
+            { name: "HR Round", type: "hr", description: "Communication, salary, and joining expectations" },
+        ],
+        passingThreshold: 5,
+        tips: [
+            "Revise core CS subjects thoroughly — OOPs, DBMS, OS",
+            "Practice basic SQL queries",
+            "Be clear and structured in your answers",
+            "Show willingness to learn and relocate",
+        ],
+    },
+    infosys: {
+        id: "infosys",
+        name: "Infosys",
+        logo: "💠",
+        color: "#007CC3",
+        description: "Interviews focused on logical reasoning, core CS knowledge, and strong communication skills.",
+        interviewStyle: "Infosys interviews assess core CS knowledge, logical reasoning ability, and communication skills. They value structured thinking, clarity of expression, and a solid understanding of programming fundamentals. Questions are moderate difficulty with focus on practical understanding rather than competitive programming.",
+        focusAreas: [
+            "Core CS Fundamentals",
+            "Logical Reasoning & Analytical Ability",
+            "Programming Fundamentals (C, Java, Python)",
+            "Database Concepts & SQL",
+            "Communication & Presentation Skills",
+            "Project Discussion & Practical Knowledge",
+        ],
+        questionPatterns: [
+            "Explain your final year project in detail",
+            "Write a program to solve a basic algorithmic problem",
+            "Explain ACID properties with examples",
+            "What are design patterns? Name a few you know",
+            "Puzzle-based logical reasoning questions",
+        ],
+        difficultyRange: { min: 1, max: 3 },
+        evaluationCriteria: [
+            "Clarity of thought and communication",
+            "Logical reasoning and problem-solving",
+            "Understanding of programming concepts",
+            "Project knowledge and practical application",
+            "Attitude and cultural fit",
+            "Ability to explain complex concepts simply",
+        ],
+        rounds: [
+            { name: "Online Assessment", type: "aptitude", description: "Logical reasoning, quantitative, and verbal ability" },
+            { name: "Technical Round", type: "technical", description: "Programming, CS fundamentals, and project discussion" },
+            { name: "HR Round", type: "hr", description: "Communication skills, career goals, and company fit" },
+        ],
+        passingThreshold: 5,
+        tips: [
+            "Know your resume and projects inside-out",
+            "Practice logical reasoning and puzzles",
+            "Be confident and clear in communication",
+            "Show enthusiasm for learning new technologies",
+        ],
+    },
+};
+
+export function getCompanyProfile(companyId: string): CompanyProfile | null {
+    return COMPANY_PROFILES[companyId.toLowerCase()] || null;
+}
+
+export function getCustomCompanyPromptContext(companyName: string): string {
+    return `The company "${companyName}" is not a predefined profile. Based on what is publicly known about ${companyName}'s hiring process, interview style, and technical expectations, adapt the interview accordingly. If ${companyName} is a startup, focus on practical problem-solving, project discussions, and adaptability. If it's a product-based company, focus on system design and technical depth. If it's a service-based company, focus on fundamentals and communication skills.`;
+}
+
+export const ALL_COMPANY_IDS = Object.keys(COMPANY_PROFILES);
