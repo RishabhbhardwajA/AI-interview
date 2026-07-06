@@ -20,6 +20,27 @@ router.get("/users", async (req: Request, res: Response): Promise<void> => {
     }
 });
 
+// GET /api/admin/stats
+router.get("/stats", async (req: Request, res: Response): Promise<void> => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const activeMentors = await User.countDocuments({ role: "Mentor" });
+        const totalAdmins = await User.countDocuments({ role: "Administrator" });
+        
+        // Return summary statistics
+        res.json({
+            stats: {
+                totalUsers,
+                activeMentors,
+                totalAdmins
+            }
+        });
+    } catch (error) {
+        console.error("[Admin Stats API Error]:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 // PATCH /api/admin/users/:id/role
 router.patch("/users/:id/role", async (req: Request, res: Response): Promise<void> => {
     try {
