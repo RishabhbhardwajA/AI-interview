@@ -24,6 +24,8 @@ export interface IInterview extends Document {
     interviewMode: "general" | "recruiter";
     mentorFeedback?: string;
     reviewedBy?: mongoose.Types.ObjectId;
+    proctoringWarnings: number;
+    isCheatingDetected: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -77,6 +79,8 @@ const InterviewSchema: Schema<IInterview> = new Schema(
             type: Schema.Types.ObjectId,
             ref: "User",
         },
+        proctoringWarnings: { type: Number, default: 0 },
+        isCheatingDetected: { type: Boolean, default: false },
     },
     {
         timestamps: true,

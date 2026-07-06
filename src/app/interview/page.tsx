@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { FiArrowRight, FiSkipForward, FiClock, FiArrowUp, FiArrowDown, FiMinus, FiCheck, FiMic, FiMicOff, FiVolume2 } from "react-icons/fi";
+import { FiArrowRight, FiSkipForward, FiClock, FiArrowUp, FiArrowDown, FiMinus, FiCheck, FiMic, FiMicOff, FiVolume2, FiAlertTriangle, FiVideo, FiVideoOff } from "react-icons/fi";
 import Link from "next/link";
 import { FiGrid, FiTarget, FiPlay, FiFileText, FiBriefcase, FiAward, FiSettings } from "react-icons/fi";
+import Webcam from "react-webcam";
 
 const TOPICS = [
     "React Hooks",
@@ -52,6 +53,12 @@ export default function InterviewPage() {
     const recognitionRef = useRef<any>(null);
     const [autoVoiceMode, setAutoVoiceMode] = useState(false);
     const autoVoiceModeRef = useRef(false);
+    
+    // Proctoring State
+    const [cameraOn, setCameraOn] = useState(true);
+    const [proctoringWarnings, setProctoringWarnings] = useState(0);
+    const [showCheatingWarning, setShowCheatingWarning] = useState(false);
+    const proctoringWarningsRef = useRef(0);
 
     // Initialize Speech Recognition
     useEffect(() => {
@@ -116,6 +123,29 @@ export default function InterviewPage() {
     useEffect(() => {
         autoVoiceModeRef.current = autoVoiceMode;
     }, [autoVoiceMode]);
+    
+    useEffect(() => {
+        proctoringWarningsRef.current = proctoringWarnings;
+    }, [proctoringWarnings]);
+
+    // Proctoring: Tab Switch Detection
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && phase === "active") {
+                const newWarnings = proctoringWarningsRef.current + 1;
+                setProctoringWarnings(newWarnings);
+                setShowCheatingWarning(true);
+                
+                if (newWarnings >= 3) {
+                    // Auto-submit on 3rd strike
+                    submitAnswer(true); 
+                }
+            }
+        };
+        
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }, [phase]);
 
     const startListeningAuto = useCallback(() => {
         if (!recognitionRef.current) return;
@@ -225,7 +255,15 @@ export default function InterviewPage() {
             const res = await fetch("/api/interview", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ action: "answer", interviewId, answer: skipped ? "" : answer, timeTaken: timer, skipped }),
+                body: JSON.stringify({ 
+                    action: "answer", 
+                    interviewId, 
+                    answer: skipped ? "" : answer, 
+                    timeTaken: timer, 
+                    skipped,
+                    proctoringWarnings: proctoringWarningsRef.current,
+                    isCheatingDetected: proctoringWarningsRef.current >= 3
+                }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
@@ -374,7 +412,8 @@ export default function InterviewPage() {
 
     // COMPLETED PHASE
     if (phase === "completed" && reportData) {
-        router.push(`/report/${(reportData as { id: string }).id}`);
+        // Safe redirect
+        setTimeout(() => router.push(`/report/${(reportData as { id: string }).id}`), 0);
         return <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center"><div className="spinner-lg spinner" /></div>;
     }
 
@@ -382,7 +421,57 @@ export default function InterviewPage() {
     return (
         <div className="flex h-screen overflow-hidden bg-[#F8FAFC] text-[#111c2d]">
             <Sidebar />
-            <main className="flex-1 ml-0 md:ml-64 h-full overflow-y-auto w-full pt-[72px] px-4 md:px-8 py-8">
+            <main className="flex-1 ml-0 md:ml-64 h-full overflow-y-auto w-full pt-[72px] px-4 md:px-8 py-8 relative">
+                
+                {/* Cheating Warning Modal */}
+                {showCheatingWarning && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                        <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl flex flex-col items-center text-center animate-bounce-short">
+                            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+                                <FiAlertTriangle size={32} />
+                            </div>
+                            <h2 className="text-2xl font-black text-gray-900 mb-2">Warning: Tab Switch Detected</h2>
+                            <p className="text-gray-600 mb-6 leading-relaxed">
+                                You switched away from the interview tab. This is considered a violation of the proctoring rules. 
+                                <br/><br/>
+                                <strong className="text-red-600">Strike {proctoringWarningsRef.current} of 3</strong>
+                            </p>
+                            <button 
+                                onClick={() => setShowCheatingWarning(false)}
+                                className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors"
+                            >
+                                I Understand, Return to Interview
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Webcam Picture-in-Picture */}
+                <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2 pointer-events-none">
+                    <div className="bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-white/20 relative" style={{ width: '240px', height: '180px' }}>
+                        {cameraOn ? (
+                            <>
+                                <Webcam audio={false} className="w-full h-full object-cover" mirrored />
+                                <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-white text-[10px] font-bold uppercase tracking-wider">
+                                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                    Proctoring Active
+                                </div>
+                            </>
+                        ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-gray-500">
+                                <FiVideoOff size={32} className="mb-2" />
+                                <span className="text-xs font-semibold">Camera Off</span>
+                            </div>
+                        )}
+                    </div>
+                    <button 
+                        onClick={() => setCameraOn(!cameraOn)}
+                        className="pointer-events-auto px-3 py-1.5 bg-white shadow-md rounded-full text-xs font-bold text-gray-600 hover:text-gray-900 flex items-center gap-1.5 transition-colors"
+                    >
+                        {cameraOn ? <><FiVideoOff size={14} /> Stop Cam</> : <><FiVideo size={14} /> Start Cam</>}
+                    </button>
+                </div>
+
                 <div className="fade-in max-w-[1000px] mx-auto mt-4">
                     {/* Top Bar */}
                     <div className="flex items-center justify-between mb-8 glass-card p-4 rounded-2xl">
