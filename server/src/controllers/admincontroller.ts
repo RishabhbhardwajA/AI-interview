@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import User from "../models/User";
 import { authenticateToken, requireRole } from "../middleware/auth";
+import Interview from "../models/Interview";
 
 const router = Router();
 
@@ -23,16 +24,17 @@ router.get("/users", async (req: Request, res: Response): Promise<void> => {
 // GET /api/admin/stats
 router.get("/stats", async (req: Request, res: Response): Promise<void> => {
     try {
-        const totalUsers = await User.countDocuments();
-        const activeMentors = await User.countDocuments({ role: "Mentor" });
-        const totalAdmins = await User.countDocuments({ role: "Administrator" });
+        const users = await User.countDocuments();
+        const activeInterviews = await Interview.countDocuments({ status: "in-progress" });
+        const completedInterviews = await Interview.countDocuments({ status: "completed" });
         
-        // Return summary statistics
+        // Return summary statistics matching exactly what the frontend expects
         res.json({
             stats: {
-                totalUsers,
-                activeMentors,
-                totalAdmins
+                users,
+                activeInterviews,
+                completedInterviews,
+                systemStatus: "Healthy / Online"
             }
         });
     } catch (error) {
